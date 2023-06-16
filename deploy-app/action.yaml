@@ -26,6 +26,10 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Debug
+      shell: bash
+      run: echo "${{ toJson(inputs.app_spec_vars) }}"
+
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
       with:
