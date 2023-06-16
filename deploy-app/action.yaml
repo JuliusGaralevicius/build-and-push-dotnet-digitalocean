@@ -19,6 +19,9 @@ inputs:
   do_token:
     description: 'Digitalocean access token'
     required: true
+  app_spec_vars:
+    description: 'JSON string of key value pairs that will be passed to app spec'
+    required: true
 
 runs:
   using: 'composite'
@@ -46,18 +49,21 @@ runs:
         docker push $(echo $REGISTRY)/$(echo ${{ inputs.app_name }}):$(echo ${{ inputs.tag }})
         docker push $(echo $REGISTRY)/$(echo ${{ inputs.app_name }}):latest
 
+    - name: Prepare environment variables
+      shell: bash
+      id: prepare
+      run: |
+        echo "env_vars<<EOF" >> $GITHUB_ENV
+        echo ${{ inputs.app_spec_vars }} | jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
     - name: Render app spec
       shell: bash
       run: envsubst < ${{ inputs.appspec_path }} > ${{ inputs.appspec_path }}-updated
-      env:
-        REPOSITORY: ${{ inputs.app_name }}
-        TAG: ${{ inputs.tag }}
-        REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-        REDIS_ENDPOINT: ${{ secrets.REDIS_ENDPOINT }}
-        MYSQL_SERVER: ${{ secrets.MYSQL_SERVER }}
-        MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
-        MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
-        MYSQL_PASSWORD: ${{ secrets.MYSQL_DB_PASSWORD }}
+
+    - name: Print app spec
+      shell: bash
+      run: cat ${{ inputs.appspec_path }}-updated
 
     - name: Update App Platform app
       shell: bash
