@@ -1,0 +1,60 @@
+name: 'Deploy App'
+description: 'Builds and deploys an app'
+inputs:
+  app_name:
+    description: 'Name of the app'
+    required: true
+  dockerfile_path:
+    description: 'Path to the Dockerfile'
+    required: true
+  appspec_path:
+    description: 'Path to the appspec file'
+    required: true
+  tag:
+    description: 'Tag for the Docker image'
+    required: true
+  registry:
+    description: 'Digitalocean Docker registry'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DO_TOKEN } 
+
+    - name: Build container image
+      shell: bash
+      run: |
+        docker build -f ${{ inputs.dockerfile_path }} -t $(echo $REGISTRY)/$(echo ${{ inputs.app_name }}):$(echo ${{ inputs.tag }}) .
+        docker tag $(echo $REGISTRY)/$(echo ${{ inputs.app_name }}):$(echo ${{ inputs.tag }}) $(echo $REGISTRY)/$(echo ${{ inputs.app_name }}):latest
+      env:
+        REGISTRY: ${{ inputs.registry } 
+
+    - name: Log in to DigitalOcean Container Registry with short-lived credentials
+      shell: bash
+      run: doctl registry login --expiry-seconds 60 
+
+    - name: Push image to DigitalOcean Container Registry
+      shell: bash
+      run: |
+        docker push $(echo $REGISTRY)/$(echo ${{ inputs.app_name }}):$(echo ${{ inputs.tag }})
+        docker push $(echo $REGISTRY)/$(echo ${{ inputs.app_name }}):latest
+
+    - name: Render app spec
+      shell: bash
+      run: envsubst < ${{ inputs.appspec_path }} > ${{ inputs.appspec_path }}-updated
+      env:
+        REPOSITORY: ${{ inputs.app_name }}
+        TAG: ${{ inputs.tag }}
+        REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+        REDIS_ENDPOINT: ${{ secrets.REDIS_ENDPOINT }}
+        MYSQL_SERVER: ${{ secrets.MYSQL_SERVER }}
+        MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
+        MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
+        MYSQL_PASSWORD: ${{ secrets.MYSQL_DB_PASSWORD } 
+
+    - name: Update App Platform app
+      shell: bash
+      run: doctl apps create --spec ${{ inputs.appspec_path }}-updated --upsert true
