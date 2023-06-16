@@ -16,6 +16,7 @@ inputs:
   registry:
     description: 'Digitalocean Docker registry'
     required: true
+    
 runs:
   using: 'composite'
   steps:
