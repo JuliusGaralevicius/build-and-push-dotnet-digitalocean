@@ -16,14 +16,17 @@ inputs:
   registry:
     description: 'Digitalocean Docker registry'
     required: true
-    
+  do_token:
+    description: 'Digitalocean access token'
+    required: true
+
 runs:
   using: 'composite'
   steps:
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
       with:
-        token: ${{ secrets.DO_TOKEN } 
+        token: ${{ inputs.do_token }}
 
     - name: Build container image
       shell: bash
