@@ -16,12 +16,20 @@ async function run() {
 
     console.log(appSpecVars);
 
-    // Execute the steps
-    // 1. Install doctl and authenticate
+    // Install doctl and authenticate
     await exec.exec('sudo snap install doctl');
     await exec.exec(`doctl auth init -t ${doToken}`);
 
-    // 2. Build container image
+    for (const [key, value] of Object.entries(appSpecVars)) {
+        process.env[key] = value;
+      }
+  
+    // Render app spec
+    const { stdout: renderedAppSpec } = await execPromisified(`envsubst < ${appspecPath}`);
+    fs.writeFileSync(`${appspecPath}-updated`, renderedAppSpec);
+
+
+    // Build container image
     const imageName = `${registry}/${appName}:${tag}`;
     const imageNameLatest = `${registry}/${appName}:latest`;
     await exec.exec(`docker build -f ${dockerfilePath} -t ${imageName} .`);
@@ -34,16 +42,10 @@ async function run() {
     await exec.exec(`docker push ${imageName}`);
     await exec.exec(`docker push ${imageNameLatest}`);
 
-    // 5. Prepare environment variables
-    for (const [key, value] of Object.entries(appSpecVars)) {
-      process.env[key] = value;
-    }
+    // Prepare environment variables
 
-    // 6. Render app spec
-    const { stdout: renderedAppSpec } = await execPromisified(`envsubst < ${appspecPath}`);
-    fs.writeFileSync(`${appspecPath}-updated`, renderedAppSpec);
 
-    // 7. Update App Platform app
+    // Update App Platform app
     await exec.exec(`doctl apps create --spec ${appspecPath}-updated --upsert true`);
 
   } catch (error) {
