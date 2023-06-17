@@ -22,7 +22,7 @@ async function run() {
     const { stdout: renderedAppSpec } = await execPromisified(`envsubst < ${appspecPath}`);
     fs.writeFileSync(`${appspecPath}-updated`, renderedAppSpec);
 
-
+    console.log(renderedAppSpec);
     // Build container image
     const imageName = `${registry}/${appName}:${tag}`;
     const imageNameLatest = `${registry}/${appName}:latest`;
