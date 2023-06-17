@@ -13,13 +13,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Get latest tag
-        id: gettag
-        run: echo "TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      - name: Fetch all tags
+        run: git fetch --tags
 
-      - name: Increment tag
-        id: increment
-        run: echo "NEW_TAG=$(echo $TAG | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')" >> $GITHUB_ENV
+      - name: Get the version
+        id: get_version
+        run: |
+          GIT_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "v0.0.0")
+          echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
+          NEW_TAG=$(echo $GIT_TAG | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
 
       - name: Create new tag
         run: git tag $NEW_TAG
