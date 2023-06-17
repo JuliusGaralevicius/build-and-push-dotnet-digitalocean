@@ -4101,7 +4101,6 @@ async function run() {
     const tag = core.getInput('tag');
     const registry = core.getInput('registry');
     const appSpecVars = JSON.parse(core.getInput('app_spec_vars'));
-    console.log(appSpecVars);
 
     for (const [key, value] of Object.entries(appSpecVars)) {
         process.env[key] = value;
@@ -4111,13 +4110,16 @@ async function run() {
     const { stdout: renderedAppSpec } = await execPromisified(`envsubst < ${appspecPath}`);
     fs.writeFileSync(`${appspecPath}-updated`, renderedAppSpec);
 
-    console.log(renderedAppSpec);
+    console.log('---app spec:', renderedAppSpec);
+
     // Build container image
     const imageName = `${registry}/${appName}:${tag}`;
     const imageNameLatest = `${registry}/${appName}:latest`;
     await exec.exec(`docker build -f ${dockerfilePath} -t ${imageName} .`);
     await exec.exec(`docker tag ${imageName} ${imageNameLatest}`);
 
+
+    console.log('---- will push the following images:', imageName, imageNameLatest)
     // Log in to DigitalOcean Container Registry with short-lived credentials
     await exec.exec(`doctl registry login --expiry-seconds 60`);
 
