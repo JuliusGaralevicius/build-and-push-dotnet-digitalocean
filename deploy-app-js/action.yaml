@@ -16,9 +16,6 @@ inputs:
   registry:
     description: 'Digitalocean Docker registry'
     required: true
-  do_token:
-    description: 'Digitalocean access token'
-    required: true
   app_spec_vars:
     description: 'JSON string of key value pairs that will be passed to app spec'
     required: true

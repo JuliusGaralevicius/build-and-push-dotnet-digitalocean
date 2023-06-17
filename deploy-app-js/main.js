@@ -11,12 +11,8 @@ async function run() {
     const appspecPath = core.getInput('appspec_path');
     const tag = core.getInput('tag');
     const registry = core.getInput('registry');
-    const doToken = core.getInput('do_token');
     const appSpecVars = JSON.parse(core.getInput('app_spec_vars'));
     console.log(appSpecVars);
-
-    // Install doctl and authenticate
-    await exec.exec(`doctl auth init -t ${doToken}`);
 
     for (const [key, value] of Object.entries(appSpecVars)) {
         process.env[key] = value;
