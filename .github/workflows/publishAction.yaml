@@ -1,10 +1,11 @@
 name: Increment version and publish release
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - main  # Or whatever your primary branch is named
-
+      - master  # Or whatever your primary branch is named
+  
 jobs:
   release:
     runs-on: ubuntu-latest
