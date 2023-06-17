@@ -4121,7 +4121,7 @@ async function run() {
 
     console.log('---- will push the following images:', imageName, imageNameLatest)
     // Log in to DigitalOcean Container Registry with short-lived credentials
-    await exec.exec(`doctl registry login --expiry-seconds 60`);
+    await exec.exec(`doctl registry login --expiry-seconds 420`);
 
     // Push image to DigitalOcean Container Registry
     await exec.exec(`docker push ${imageName}`);
