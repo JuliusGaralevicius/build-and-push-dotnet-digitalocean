@@ -1,0 +1,27 @@
+name: 'Deploy App'
+description: 'Builds and deploys an app'
+inputs:
+  app_name:
+    description: 'Name of the app'
+    required: true
+  dockerfile_path:
+    description: 'Path to the Dockerfile'
+    required: true
+  appspec_path:
+    description: 'Path to the appspec file'
+    required: true
+  tag:
+    description: 'Tag for the Docker image'
+    required: true
+  registry:
+    description: 'Digitalocean Docker registry'
+    required: true
+  do_token:
+    description: 'Digitalocean access token'
+    required: true
+  app_spec_vars:
+    description: 'JSON string of key value pairs that will be passed to app spec'
+    required: true
+runs:
+  using: 'node16'
+  main: 'main.js'

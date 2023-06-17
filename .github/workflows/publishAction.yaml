@@ -1,0 +1,41 @@
+name: Increment version and publish release
+
+on:
+  push:
+    branches:
+      - main  # Or whatever your primary branch is named
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get latest tag
+        id: gettag
+        run: echo "TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+
+      - name: Increment tag
+        id: increment
+        run: echo "NEW_TAG=$(echo $TAG | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')" >> $GITHUB_ENV
+
+      - name: Create new tag
+        run: git tag $NEW_TAG
+
+      - name: Push tags
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tags: true
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          release_name: Release ${{ env.NEW_TAG }}
+          draft: false
+          prerelease: false
