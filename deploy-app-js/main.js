@@ -36,6 +36,8 @@ async function run() {
       dockerArgsString += ` --build-arg ${key}=${value}`;
     }
 
+    console.log(dockerArgsString);
+
     await exec.exec(`docker build -f ${dockerfilePath} -t ${imageName} ${dockerbuildContext} ${dockerArgsString}`);
     await exec.exec(`docker tag ${imageName} ${imageNameLatest}`);
 
