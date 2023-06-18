@@ -12,10 +12,11 @@ async function run() {
     const tag = core.getInput('tag');
     const registry = core.getInput('registry');
     const appSpecVars = JSON.parse(core.getInput('app_spec_vars'));
+    const dockerbuildContext = core.getInput('docker_build_context');
 
     for (const [key, value] of Object.entries(appSpecVars)) {
         process.env[key] = value;
-      }
+    }
   
     // Render app spec
     const { stdout: renderedAppSpec } = await execPromisified(`envsubst < ${appspecPath}`);
@@ -26,7 +27,7 @@ async function run() {
     // Build container image
     const imageName = `${registry}/${appName}:${tag}`;
     const imageNameLatest = `${registry}/${appName}:latest`;
-    await exec.exec(`docker build -f ${dockerfilePath} -t ${imageName} .`);
+    await exec.exec(`docker build -f ${dockerfilePath} -t ${imageName} ${dockerbuildContext}`);
     await exec.exec(`docker tag ${imageName} ${imageNameLatest}`);
 
 

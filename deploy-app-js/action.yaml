@@ -19,6 +19,10 @@ inputs:
   app_spec_vars:
     description: 'JSON string of key value pairs that will be passed to app spec'
     required: true
+  docker_build_context:
+    description: 'JSON string of key value pairs that will be passed to app spec'
+    default: '.'
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'
