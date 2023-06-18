@@ -4108,6 +4108,8 @@ async function run() {
         process.env[key] = value;
     }
 
+    // docker build --build-arg ARG1=value1 --build-arg ARG2=value2 -t your_image_name .
+  
     // Render app spec
     const { stdout: renderedAppSpec } = await execPromisified(`envsubst < ${appspecPath}`);
     fs.writeFileSync(`${appspecPath}-updated`, renderedAppSpec);
@@ -4120,8 +4122,10 @@ async function run() {
 
     let dockerArgsString = '';
     for (const [key, value] of Object.entries(dockerenvVars)) {
-      dockerArgsString += ` --build-arg ${key}=${value}`;
+      dockerArgsString += ` --build-arg ${key}="${value}"`;
     }
+
+    console.log(dockerArgsString);
 
     await exec.exec(`docker build -f ${dockerfilePath} -t ${imageName} ${dockerbuildContext} ${dockerArgsString}`);
     await exec.exec(`docker tag ${imageName} ${imageNameLatest}`);
