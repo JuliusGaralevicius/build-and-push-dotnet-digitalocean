@@ -4102,11 +4102,12 @@ async function run() {
     const registry = core.getInput('registry');
     const appSpecVars = JSON.parse(core.getInput('app_spec_vars'));
     const dockerbuildContext = core.getInput('docker_build_context');
+    const dockerenvVars = JSON.parse(core.getInput('docker_env_vars'));
 
     for (const [key, value] of Object.entries(appSpecVars)) {
         process.env[key] = value;
     }
-  
+
     // Render app spec
     const { stdout: renderedAppSpec } = await execPromisified(`envsubst < ${appspecPath}`);
     fs.writeFileSync(`${appspecPath}-updated`, renderedAppSpec);
@@ -4116,7 +4117,13 @@ async function run() {
     // Build container image
     const imageName = `${registry}/${appName}:${tag}`;
     const imageNameLatest = `${registry}/${appName}:latest`;
-    await exec.exec(`docker build -f ${dockerfilePath} -t ${imageName} ${dockerbuildContext}`);
+
+    let dockerArgsString = '';
+    for (const [key, value] of Object.entries(dockerenvVars)) {
+      dockerArgsString += ` --build-arg ${key}=${value}`;
+    }
+
+    await exec.exec(`docker build -f ${dockerfilePath} -t ${imageName} ${dockerbuildContext} ${dockerArgsString}`);
     await exec.exec(`docker tag ${imageName} ${imageNameLatest}`);
 
 
