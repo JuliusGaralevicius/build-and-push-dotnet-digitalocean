@@ -33,7 +33,7 @@ async function run() {
 
     let dockerArgsString = '';
     for (const [key, value] of Object.entries(dockerenvVars)) {
-      dockerArgsString += ` --build-arg ${key}=${value}`;
+      dockerArgsString += ` --build-arg ${key}="${value}"`;
     }
 
     console.log(dockerArgsString);
