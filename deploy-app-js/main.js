@@ -50,10 +50,10 @@ async function run() {
     await exec.exec(`docker push ${imageNameLatest}`);
 
     // Update App Platform app
-    let createOutput = await execPromisified(`doctl apps create --spec ${appspecPath}-updated --upsert true --output json`);
-    console.log(createOutput);
-    let createOutputJson = JSON.parse(createOutput);
+    let { stdout: output } = await execPromisified(`doctl apps create --spec ${appspecPath}-updated --upsert true --output json`);
+    let createOutputJson = JSON.parse(output);
     console.log(createOutputJson);
+    console.log(createOutputJson[0]);
   } catch (error) {
     core.setFailed(error.message);
   }
