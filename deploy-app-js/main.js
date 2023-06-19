@@ -50,7 +50,7 @@ async function run() {
     await exec.exec(`docker push ${imageNameLatest}`);
 
     // Update App Platform app
-    let {createOutput} = await exec.execPromisified(`doctl apps create --spec ${appspecPath}-updated --upsert true --output json`);
+    let {createOutput} = await execPromisified(`doctl apps create --spec ${appspecPath}-updated --upsert true --output json`);
     console.log(createOutput);
     let createOutputJson = JSON.parse(createOutput);
     console.log(createOutputJson);
