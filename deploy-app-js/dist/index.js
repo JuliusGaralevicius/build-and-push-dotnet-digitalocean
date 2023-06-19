@@ -4130,7 +4130,6 @@ async function run() {
     await exec.exec(`docker build -f ${dockerfilePath} -t ${imageName} ${dockerbuildContext} ${dockerArgsString}`);
     await exec.exec(`docker tag ${imageName} ${imageNameLatest}`);
 
-
     console.log('---- will push the following images:', imageName, imageNameLatest)
     // Log in to DigitalOcean Container Registry with short-lived credentials
     await exec.exec(`doctl registry login --expiry-seconds 420`);
@@ -4140,8 +4139,10 @@ async function run() {
     await exec.exec(`docker push ${imageNameLatest}`);
 
     // Update App Platform app
-    await exec.exec(`doctl apps create --spec ${appspecPath}-updated --upsert true`);
-
+    let {createOutput} = await exec.execPromisified(`doctl apps create --spec ${appspecPath}-updated --upsert true --output json`);
+    console.log(createOutput);
+    let createOutputJson = JSON.parse(createOutput);
+    console.log(createOutputJson);
   } catch (error) {
     core.setFailed(error.message);
   }
